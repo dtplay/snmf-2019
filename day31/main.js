@@ -90,7 +90,11 @@ app.use(session({
     secret: config.sessionSecret,
     name: 'session_id', // session name -> cookie name
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {
+        // Expires in 30 seconds
+        expires: 1000 * 60 * 30
+    }
 }))
 
 // Add passport to the request route
