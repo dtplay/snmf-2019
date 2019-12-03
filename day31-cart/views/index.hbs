@@ -1,0 +1,45 @@
+<h2>My Cart</h2>
+
+<form method="POST" action="/cart">
+    <table>
+        <tr>
+            <td>Name:</td>
+            <td>
+                <input type="text" name="name" value="{{ cart.name }}">
+            </td>
+        </tr>
+        <tr>
+            <td>Description:</td>
+            <td>
+                <input type="text" name="description" size="30">
+            </td>
+        </tr>
+        <tr>
+            <td>Quantity:</td>
+            <td>
+                <input type="number" name="quantity" size="30" min="1">
+                <button type="submit">Add</button>
+            </td>
+        </tr>
+    </table>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each cart.items}}
+                <tr>
+                    <td>{{ this.description }}</td>
+                    <td>{{ this.quantity }}</td>
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <button>Checkout</button>
+
+</form>
