@@ -1,15 +1,19 @@
 const morgan = require('morgan');
 const mysql = require('mysql');
+const MongoClient = require('mongodb').MongoClient
 const express = require('express');
 const hbs = require('express-handlebars');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
 const config = require('./config');
+const mongoUrl = require('/opt/tmp/keys/config').atlas.url;
 const mkQuery = require('./dbutil');
 
 const PORT = 3000;
 const pool = mysql.createPool(config);
+
+const client = new MongoClient(mongoUrl, { useUnifiedTopology: true })
 
 const FIND_USER = 'select count(*) as user_count from users where username = ? and password = sha2(?, 256)';
 const GET_USER_DETAILS = 'select username, email, department from users where username = ?';
@@ -58,25 +62,42 @@ app.use(cors());
 app.use(passport.initialize())
 
 app.get('/status/:code',
-        (req, resp) => {
-            // need to do a little more checking
-            resp.status(parseInt(req.params.code)).json({ message: 'incorrect login' })
-        }
+    (req, resp) => {
+        // need to do a little more checking
+        resp.status(parseInt(req.params.code)).json({ message: 'incorrect login' })
+    }
 )
 
 app.get('/customers',
     (req, resp, next) => {
+        console.info('user: ', req.user);
         const authorization = req.get('Authorization');
         if (!(authorization && authorization.startsWith('Bearer ')))
             return resp.status(403).json({ message: 'not authorized' })
 
         const tokenStr = authorization.substring('Bearer '.length)
-        try {
-            req.jwt = jwt.verify(tokenStr, config.sessionSecret);
-            next()
-        } catch (e) {
-            return resp.status(401).json({ message: 'invalid token' })
-        }
+        client.db('stuff').collection('jwt_tokens').find({ jwt: tokenStr })
+            .toArray()
+            .then(result => {
+                if (result.length) {
+                    console.info('found token')
+                    req.jwt = result[0].token;
+                    return next()
+                }
+                try {
+                    console.info('not found: ')
+                    req.jwt = jwt.verify(tokenStr, config.sessionSecret);
+                    client.db('stuff').collection('jwt_tokens').insertOne(
+                        {
+                            name: req.jwt.sub,
+                            jwt: tokenStr,
+                            token: req.jwt
+                        }
+                    ).then(result => next())
+                } catch (e) {
+                    return resp.status(401).json({ message: 'invalid token' })
+                }
+            })
     },
     (req, resp) => {
         console.info('token: ', req.jwt);
@@ -120,6 +141,12 @@ app.get([ '/', '/login' ], (req, resp) => {
 
 app.use(express.static(__dirname + '/public'))
 
-app.listen(PORT,
-    () => { console.info(`Application started on port ${PORT} at ${new Date()}`) }
-);
+client.connect((err, _) => {
+    if (err) {
+        console.error('>> error: ', err);
+        process.exit(-1);
+    }
+    app.listen(PORT,
+        () => { console.info(`Application started on port ${PORT} at ${new Date()}`) }
+    );
+})
