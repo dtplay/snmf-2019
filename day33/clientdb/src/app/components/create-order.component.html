@@ -1,0 +1,54 @@
+<h1>Create Order</h1>
+
+<form [formGroup]="form" (ngSubmit)="processOrder()">
+  <table>
+    <tr>
+      <td>Name:</td>
+      <td>
+        <input type="text" name="name" size="30" formControlName="name">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <div class="separate-them">
+          <button type="submit" [disabled]="form.invalid || lineItems.length <= 0">
+            Create Order
+          </button>
+          <button type="button" (click)="addLineItem()">
+            Add Item
+          </button>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <table *ngIf="lineItems.length > 0">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Quantity</th>
+      </tr>
+    </thead>
+    <tbody formArrayName="lineItems">
+      <tr *ngFor="let li of lineItems.controls; let i = index;" [formGroup]="li">
+        <td>
+          <input type="text" name="description" size="30" formControlName="description">
+        </td>
+        <td>
+          <input type="number" name="quantity" size="10" formControlName="quantity">
+        </td>
+        <td>
+          <button type="button" (click)="removeLineItem(i)">
+            X
+          </button>
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+
+</form>
+
+<button routerLink="/">
+  Back
+</button>
