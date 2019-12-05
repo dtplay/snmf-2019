@@ -17,10 +17,10 @@ export class AuthService implements CanActivate {
   }
 
   getCustomers(): Promise<string[]> {
-    const params = new HttpParams()
+    const headers = new HttpHeaders()
       .set('Authorization', `Bearer ${this.token}`)
     return (
-      this.http.get<string[]>('/customers', { params })
+      this.http.get<string[]>('/customers', { headers })
         .toPromise()
         .catch(error => {
           console.info(error.status);

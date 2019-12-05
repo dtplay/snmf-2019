@@ -14,8 +14,10 @@ export class LoginComponent implements OnInit {
               private authSvc: AuthService) { }
 
   ngOnInit() {
-    console.info('> ', this.activatedRoute.snapshot.queryParams)
-    console.info('> ', this.activatedRoute.snapshot.params)
+    if (!('access_token' in this.activatedRoute.snapshot.queryParams))
+      return;
+    this.authSvc.token = this.activatedRoute.snapshot.queryParams.access_token;
+    this.router.navigate(['/list']);
   }
 
   performLogin(loginForm: NgForm) {

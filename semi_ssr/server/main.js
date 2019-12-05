@@ -40,7 +40,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-//app.get('/redirect', (req, resp) => resp.redirect('/client?key=abc123'));
 
 app.get('/status/:code',
 	(req, resp) => {
@@ -52,6 +51,17 @@ app.get('/customers',
 	(req, resp, next) => {
 		console.info('user: ', req.user)
 		console.info('session: ', req.session)
+		const bearer = req.get('Authorization');
+		if (!(bearer && bearer.startsWith('Bearer ')))
+			return resp.status(401).json({ message: 'not authorized' });
+		const token = bearer.substring('Bearer '.length);
+		console.info('token: ', token)
+		try {
+			jwt.verify(token, SECRET)
+		} catch (err) {
+			console.error('>>> err: ', err);
+			return resp.status(401).json({ message: 'not authorized' });
+		}
 		next();
 	},
 	(req, resp) => {
