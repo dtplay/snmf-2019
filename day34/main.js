@@ -43,9 +43,7 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.post('/register',
-    passport.authenticate('github', { scope: [ 'gist' ]})
-)
+app.post('/register', passport.authenticate('github', { scope: [ 'gist' ]}))
 
 app.get('/github/callback',
     passport.authenticate('github', { failureRedirect: '/error.html' } ),
