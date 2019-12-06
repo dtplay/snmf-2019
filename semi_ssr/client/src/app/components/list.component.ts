@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {AuthService} from '../auth.service';
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-list',
@@ -10,7 +11,7 @@ export class ListComponent implements OnInit {
 
   customers: string[] = [];
 
-  constructor(private authSvc: AuthService) { }
+  constructor(private authSvc: AuthService, private router: Router) { }
 
   ngOnInit() {
     this.reload();
@@ -18,7 +19,9 @@ export class ListComponent implements OnInit {
 
   reload() {
     this.authSvc.getCustomers()
-      .then(result => this.customers = result);
+      .then(result => this.customers = result)
+      .catch(error => {
+        this.router.navigate(['/']);
+      });
   }
-
 }
